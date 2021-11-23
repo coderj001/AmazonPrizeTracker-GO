@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -26,9 +27,17 @@ func main() {
 
 	response := scrapeweb(rurl)
 	fmt.Println(response.Status)
+	defer response.Body.Close()
 	doc, _ := goquery.NewDocumentFromReader(response.Body)
-	title := doc.Find("span .a-size-large .product-title-word-break")
-	fmt.Println(title.Text())
+
+	product_name := strings.Trim(doc.Find(".a-size-large .product-title-word-break").Text(), "\n")
+	fmt.Println("Poduct Name: ", product_name)
+
+	product_price := doc.Find("#priceblock_ourprice").Text()
+	fmt.Println("Poduct Prize: ", product_price[2:])
+    // TODO:  <24-11-21, coderj001> // Error not convert to float
+	product_price_float, _ := strconv.ParseFloat(product_price[2:], 64)
+	fmt.Println("Poduct Prize: ", product_price_float)
 }
 
 // convert bulk url into sutiable formant
@@ -58,7 +67,6 @@ func scrapeweb(short_url string) *http.Response {
 	if err != nil {
 		log.Panic(err)
 	}
-	defer resp.Body.Close()
 
 	return resp
 }
