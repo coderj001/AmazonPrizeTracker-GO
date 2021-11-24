@@ -34,9 +34,11 @@ func main() {
 	fmt.Println("Poduct Name: ", product_name)
 
 	product_price := doc.Find("#priceblock_ourprice").Text()
-	fmt.Println("Poduct Prize: ", product_price[2:])
-    // TODO:  <24-11-21, coderj001> // Error not convert to float
-	product_price_float, _ := strconv.ParseFloat(product_price[2:], 64)
+	product_price = strings.ReplaceAll(product_price, ",", "")
+	product_price = strings.ReplaceAll(product_price, "₹", "")
+
+	fmt.Println("Poduct Prize: ", product_price)
+	product_price_float, _ := strconv.ParseFloat(product_price, 64)
 	fmt.Println("Poduct Prize: ", product_price_float)
 }
 
