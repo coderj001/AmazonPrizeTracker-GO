@@ -13,33 +13,30 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
+// Product struct
+type Product struct {
+	link          string
+	product_name  string
+	product_price float64
+}
+
 func main() {
-	var in_url string
+	var input_url string
 
 	fmt.Println(" :Welcome To Amazon Prize Tracker: ")
 	fmt.Print("Enter URL: ")
-	fmt.Scanln(&in_url)
+	fmt.Scanln(&input_url)
 
-	rurl, err := urlcheck(in_url)
+	short_url, err := urlcheck(input_url)
 	if err != nil {
 		log.Panic(err)
 	}
 
-	response := scrapeweb(rurl)
-	fmt.Println(response.Status)
-	defer response.Body.Close()
-	doc, _ := goquery.NewDocumentFromReader(response.Body)
-
-	product_name := strings.Trim(doc.Find(".a-size-large .product-title-word-break").Text(), "\n")
-	fmt.Println("Poduct Name: ", product_name)
-
-	product_price := doc.Find("#priceblock_ourprice").Text()
-	product_price = strings.ReplaceAll(product_price, ",", "")
-	product_price = strings.ReplaceAll(product_price, "₹", "")
-
-	fmt.Println("Poduct Prize: ", product_price)
-	product_price_float, _ := strconv.ParseFloat(product_price, 64)
-	fmt.Println("Poduct Prize: ", product_price_float)
+	product, err := scrapeweb(short_url)
+	if err != nil {
+		log.Panic(err)
+	}
+	fmt.Println(product)
 }
 
 // convert bulk url into sutiable formant
@@ -62,13 +59,33 @@ func urlcheck(in_url string) (string, error) {
 	return short_url, nil
 }
 
-func scrapeweb(short_url string) *http.Response {
+// scrape amazon.in product page
+// and return - {url, product_name, product_price}
+func scrapeweb(short_url string) (Product, error) {
 	client := http.Client{Timeout: 30 * time.Second}
 
-	resp, err := client.Get(short_url)
+	response, err := client.Get(short_url)
+	if err != nil {
+		log.Panic(err)
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode != 200 {
+		return Product{}, errors.New("Connection error")
+	}
+
+	doc, err := goquery.NewDocumentFromReader(response.Body)
 	if err != nil {
 		log.Panic(err)
 	}
 
-	return resp
+	product_name := strings.Trim(doc.Find(".a-size-large .product-title-word-break").Text(), "\n")
+
+	product_price := doc.Find("#priceblock_ourprice").Text()
+	product_price = strings.ReplaceAll(product_price, ",", "")
+	product_price = strings.ReplaceAll(product_price, "₹", "")
+
+	product_price_float, _ := strconv.ParseFloat(product_price, 64)
+
+	return Product{link: short_url, product_name: product_name, product_price: product_price_float}, nil
 }
