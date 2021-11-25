@@ -27,12 +27,12 @@ func main() {
 	fmt.Print("Enter URL: ")
 	fmt.Scanln(&input_url)
 
-	short_url, err := urlcheck(input_url)
+	short_url, err := CovUrl(input_url)
 	if err != nil {
 		log.Panic(err)
 	}
 
-	product, err := scrapeweb(short_url)
+	product, err := ScrapeData(short_url)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -41,7 +41,7 @@ func main() {
 
 // convert bulk url into sutiable formant
 // ex: http://www.amazon.com/dp/JA12AN120
-func urlcheck(in_url string) (string, error) {
+func CovUrl(in_url string) (string, error) {
 	var short_url string
 	URL, err := url.Parse(in_url)
 	if err != nil {
@@ -55,13 +55,13 @@ func urlcheck(in_url string) (string, error) {
 		return "", errors.New("Should be https.")
 	}
 	str_path := strings.Split(URL.Path, "/")
-	short_url = URL.Scheme + "://" + URL.Host + "/" + str_path[2] + "/" + str_path[3]
+	short_url = URL.Scheme + "://" + URL.Host + "/" + str_path[1] + "/" + str_path[2]
 	return short_url, nil
 }
 
 // scrape amazon.in product page
 // and return - {url, product_name, product_price}
-func scrapeweb(short_url string) (Product, error) {
+func ScrapeData(short_url string) (Product, error) {
 	client := http.Client{Timeout: 30 * time.Second}
 
 	response, err := client.Get(short_url)
