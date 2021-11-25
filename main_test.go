@@ -14,3 +14,12 @@ func TestCovUrl(t *testing.T) {
 		t.Error("Function: CovUrl not provide correct url format.")
 	}
 }
+
+func TestScrapeData(t *testing.T) {
+    short_url := "http://www.amazon.com/dp/B09G3CSL7Y"
+    prod := Product{link: "http://www.amazon.com/dp/B09G3CSL7Y", product_name: "Xiaomi 11 Lite NE 5G (Vinyl Black 6GB RAM 128 GB Storage) | Slimmest (6.81mm) & Lightest (158g) 5G Smartphone | 10-bit AMOLED with Dolby Vision | Additional Off up to 5000 on Exchange", product_price: 28999}
+    product, _ := ScrapeData(short_url)
+    if prod != product{
+		t.Error("Function: ScrapeData not working.")
+    }
+}
